@@ -13,7 +13,7 @@ contract Human {
         owner = msg.sender;
     }
     
-  function greet() pure returns (string) {
+  function greet() pure public returns (string) {
     return "Hello world";
   }
 
