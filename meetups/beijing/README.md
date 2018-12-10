@@ -1,4 +1,4 @@
-# Beijin Smart Contract Meetup
+# Beijing Smart Contract Meetup
 
 ## Join us on meetup.com
 https://www.meetup.com/Beijing-Smart-Contract-Meetup/
