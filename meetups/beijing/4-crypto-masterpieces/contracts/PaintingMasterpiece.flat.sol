@@ -967,4 +967,12 @@ contract ERC721Mintable is ERC721, MinterRole {
 contract MyNFT is ERC721Full, ERC721Mintable {
   constructor() ERC721Full("MyNFT", "MNFT") public {
   }
+
+  function imageOf(uint tokenID) public view returns (string){
+      return "https://demo.com/image_name";
+  }
+
+  function imageHash(uint tokenID) public view returns (string){
+      return "ASDFGCDEG"
+  }
 }
