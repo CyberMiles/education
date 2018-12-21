@@ -973,6 +973,6 @@ contract MyNFT is ERC721Full, ERC721Mintable {
   }
 
   function imageHash(uint tokenID) public view returns (string){
-      return "ASDFGCDEG"
+      return "ASDFGCDEG";
   }
 }
