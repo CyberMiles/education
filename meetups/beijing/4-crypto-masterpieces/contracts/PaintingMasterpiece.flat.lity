@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma lity ^1.2.4;
 
 // File: openzeppelin-solidity/contracts/introspection/IERC165.sol
 
@@ -965,14 +965,17 @@ contract ERC721Mintable is ERC721, MinterRole {
 // File: contracts/PaintingMasterpiece.sol
 
 contract MyNFT is ERC721Full, ERC721Mintable {
-  constructor() ERC721Full("MyNFT", "MNFT") public {
+    constructor() ERC721Full("MyNFT", "MNFT") public {
+  }
+  
+
+  function mintToken(address to, uint256 tokenId, string uri) public {
+      mint(to, tokenId);
+      require(_exists(tokenId));
+      _setTokenURI(tokenId, uri);
+  }
+  function burnToken(address owner, uint256 tokenId) public {
+      _burn(owner, tokenId);
   }
 
-  function imageOf(uint tokenID) public view returns (string){
-      return "https://demo.com/image_name";
-  }
-
-  function imageHash(uint tokenID) public view returns (string){
-      return "ASDFGCDEG";
-  }
 }
