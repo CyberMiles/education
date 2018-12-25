@@ -7,18 +7,32 @@ https://www.meetup.com/Beijing-Smart-Contract-Meetup/
 
 ### 1. Devcon4 Recap (2018-11-04)
 Keynote:
+
 https://github.com/CyberMiles/education/blob/master/meetups/beijing/1-devcon4-recap/devcon4_recap.md
 
 ### 2. Workshop 101: Mastering Smart Contract (2018-11-25)
+Keynote:
 
 https://github.com/CyberMiles/education/blob/master/meetups/beijing/2-smart-contract-101/intro.pdf
 
+Source Code:
+
+1. https://github.com/CyberMiles/education/blob/master/meetups/beijing/2-smart-contract-101/hello_world.lity
+2. https://github.com/CyberMiles/education/blob/master/meetups/beijing/2-smart-contract-101/bet_game.lity
+
 ### 3. Workshop 102: Solidity and ERC-20 (2018-12-09)
+Keynote:
 
 https://github.com/CyberMiles/education/blob/master/meetups/beijing/3-erc20/meetup3_erc20.pdf
 
+Source Code:
+
+1. https://github.com/CyberMiles/education/blob/master/meetups/beijing/3-erc20/hello_world.lity
+2. https://github.com/CyberMiles/education/blob/master/meetups/beijing/3-erc20/erc20_token.lity
+
 ### 4. Workshop 103: Solidity and ERC-721 (2018-12-23)
 Keynote:
+
 https://github.com/CyberMiles/education/blob/master/meetups/beijing/4-crypto-masterpieces/erc721.pdf
 
 Source Code:
