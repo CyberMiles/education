@@ -29,7 +29,7 @@ export function sendTransaction (rawTx) {
         //showMsg(err)
         //reject(err);
       } else {
-        showMsg("Creating contract ......<br>" + hash)
+        showMsg("Creating contract:")
 
         resolve(hash)
       }
@@ -167,12 +167,13 @@ export function initWeb3(callback){
       initWeb3(callback)
     }, 1000)
   }else{
-    showMsg("web3cmt ok. ")
+
     try{
       callback()
     }catch (e) {
       console.warn("web3 init callback error:", e)
     }
+    showMsg("web3cmt ok. ", "info", true)
   }
 
 }

@@ -1,6 +1,6 @@
 // import CSS. Webpack with deal with it
 import "../css/style.css"
-
+//import "../js/dappBrowser"
 
 import {GetRequest, saveLocalStorageForListItem, showMsg, showDoing} from "./utils"
 import {initWeb3,  sendTransaction, getTitle, waitForTransactionReceipt, getVoteOption,
@@ -60,6 +60,8 @@ window.App = {
         App.createVote()
       } catch (e) {
         console.error("createVote", e)
+        showMsg(e, "error")
+
       }
     })
 
@@ -92,7 +94,7 @@ window.App = {
 
     App.init();
     if(!currentAccount){
-      showMsg("Current Account is no found！Try again!", 'warn')
+      showMsg("No current account was found. Try again!", 'warn')
       return
     }
 
@@ -110,7 +112,7 @@ window.App = {
       optionArray.push(web3.toHex(encodeURI(option)))
     }
 
-    console.log("--createVote:params >>>", title, optionArray)
+    console.log("--createVote:params", title, optionArray)
 
     let contractData = await contractInstance.new.getData(title, optionArray, {data: bytecode})
     let rawTx = {
@@ -119,26 +121,31 @@ window.App = {
       gasPrice: 2000000000,
       data: contractData,
     }
-    console.log("--createVote:rawTx >>>", rawTx)
+    console.log("--createVote:rawTx", rawTx)
 
     showMsg("Please confirm the transaction at Metamask ...")
 
     const hash = await sendTransaction(rawTx)
-    console.log("--createVote:tx hash: " + hash)
+    const data = {
+      address: "",
+      title: title,
+      hash: hash
+    }
+    const html = $("#tmpl_vote_result").render(data)
+    $("#createResult").html(html)
 
-    console.log('-----waitForTransactionReceipt-----')
+    console.log('-----waitForTransactionReceipt-----', data);
     waitForTransactionReceipt(hash, function(err,receipt){
 
       const contractAddress = receipt.contractAddress
       if (contractAddress) {
-        $("#msg").html("Contract was successfully created !!!")
+        showMsg("Contract was successfully created !!!")
 
         const data = {
           address: contractAddress,
           title: title,
           hash: hash
         }
-
         const html = $("#tmpl_vote_result").render(data)
         $("#createResult").html(html)
 
@@ -175,54 +182,72 @@ window.App = {
         showDoing(true)
 
         const result = await getVoteOption(contract, index)
+        console.info("result", result);
         if (result === initValue) {
           break
         }
         console.info("getVoteOption result", contractAddress, index, decodeURI(web3.toAscii(result)))
 
-        if(result==="0x"){
+        if (result === "0x") {
           break
         }
         voteResultData.options.push({"option": decodeURI(web3.toAscii(result))})
 
-        if(index>100){
+        if (index > 100) {
           break
         }
         index++
       }
-      // console.log("voteResultData", voteResultData.options)
-      for (let i = 0; i < voteResultData.options.length; i++) {
-        const score = await getVoteResult(contract, i)
-        voteResultData.options[i]["score"] = score.toString()
 
-        showDoing(true)
+      if (voteResultData.options.length === 0) {
+
+        showMsg("Unknow contract!")
+
+      } else {
+
+        // console.log("voteResultData", voteResultData.options)
+        for (let i = 0; i < voteResultData.options.length; i++) {
+          const score = await getVoteResult(contract, i)
+          voteResultData.options[i]["score"] = score.toString()
+          showDoing(true)
+        }
+
+        const title = await getTitle(contract, contractAddress)
+        voteResultData.voteTitle = title;
+
+        const html = $("#tmpl_vote_list").render(voteResultData)
+        $("#voteResult").html(html)
+
+        $("#resultTable").on("click", ".voteBtn", function (e) {
+          const option = $(e.target).attr("val")
+          App.submitVote(contractAddress, option)
+        })
+
+        showMsg("");
+
+        await App.verifyAccountVote(contract, currentAccount)
+
       }
       // console.log("voteResultData", voteResultData.options)
 
-      const title = await getTitle(contract, contractAddress)
-      voteResultData.voteTitle = title;
-
       showDoing()
-
-      const html = $("#tmpl_vote_list").render(voteResultData)
-      $("#voteResult").html(html)
-
-      $("#resultTable").on("click", ".voteBtn", function (e) {
-        const option = $(e.target).attr("val")
-        App.submitVote(contractAddress, option)
-      })
-
-      showMsg("")
-      
-      await App.verifyAccountVote(contract, currentAccount)
 
     } catch (e) {
       console.error(e)
-      showMsg(e)
+      showMsg(e, "error")
     }
 
   },
   verifyAccountVote: async function (contract, currentAccount) {
+
+    //console.info(!currentAccount)
+    if(!currentAccount){
+      //showMsg("Warning:", "warn")
+      await App.init();
+      showMsg("No current account was found.", "warn")
+
+      return
+    }
 
     const verifyResult = await verifyIsVoted(contract, currentAccount)
     if (verifyResult[0] === initAccount) {
@@ -232,6 +257,9 @@ window.App = {
       showMsg("Warning: You have already voted to this contract !", "warn")
 
       $(".voteBtn").attr("disabled",true);
+      $(".voteBtn").addClass("btn-default btn-lg");
+      $(".voteBtn").removeClass("btn-success");
+
     }
   },
 
@@ -257,7 +285,7 @@ window.App = {
         }
       } else {
         console.log("tx: " + hash)
-        showMsg("Voting ... <br>" + hash)
+        //showMsg("Voting ... <br>" + hash)
         waitForTransactionReceipt(hash,function(err,receipt){
 
           console.log('----vote receipt---',receipt)
@@ -291,7 +319,21 @@ function getConfig(){
 
 
 // When the page loads, we create a web3 instance and set a provider. We then set up the app
-$(document).ready(function () {
+//$(document).ready(function () {
+$(function () {
+
+  try{
+    setTimeout(function(){
+      var webBrowser = new AppLink();
+      webBrowser.openBrowser();
+
+      //alert("openBrowser")
+      console.info("openBrowser");
+    },500)
+
+  }catch (e) {
+    console.error(e);
+  }
 
   getConfig();
 
@@ -304,6 +346,8 @@ $(document).ready(function () {
     App.loadData();
 
   });
+
+
 
 })
 

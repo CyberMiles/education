@@ -28,7 +28,6 @@ export function saveLocalStorageForListItem(key, data) {
   item.push(data)
 
   myStorage.setItem(key, JSON.stringify(item))
-  //console.info("-------myStorage-----", myStorage)
 }
 
 export function getLocalStorageForListItem(key) {
@@ -45,13 +44,26 @@ export function getLocalStorageForListItem(key) {
 
 
 
-export function showMsg(msg, type) {
+export function showMsg(msg, type, hide) {
+
+  setTimeout(function(){
+    $("#msg").show();
+  }, 5000)
+  $("#msg").show();
+
   if(type==="warn") {
     $("#msg").html("<p class='text-warning'>" + msg + "</p>")
   }else if(type==="error"){
     $("#msg").html("<p class='text-danger'>" + msg + "</p>")
   } else {
     $("#msg").html("<p class='text-info'>" + msg + "</p>")
+  }
+
+  //alert(hide)
+  if(hide){
+    setTimeout(function(){
+      $("#msg").hide();
+    }, 5000)
   }
 }
 
