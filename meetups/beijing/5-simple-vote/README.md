@@ -15,7 +15,7 @@ A decentralized voting application built on the Cybermiles blockchain A boilerpl
 ```
     git clone https://github.com/CyberMiles/education.git
     
-    cd ./education/meetups/beijin/5-simple-vote
+    cd ./education/meetups/beijing/5-simple-vote
     npm install
     npm run dev
 
