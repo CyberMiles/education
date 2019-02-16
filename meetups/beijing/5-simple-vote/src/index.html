@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="https://www.cybermiles.io/icons/icon-48x48.png" />
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Voting Dapp for Cybermiles </title>
+
+    <link href="https://cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-big-counter.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/pace/1.0.2/pace.min.js"
+            crossorigin="anonymous"></script>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
+          integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+
+</head>
+<body>
+<div class="container" id="container">
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js"
+        integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
+        crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.1/jsrender.min.js" type="text/javascript" ></script>
+<!--https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.1/jsrender.min.js.map-->
+
+<script>
+  /**
+   * AppLink:H5唤起APP的所有方法
+   */
+  var AppLink = (function () {
+
+    var dappUrl = "cmtwallet://dapp?url=" + window.location.href;
+    //var dappUrl = "https://www.cmtwallet.io/dapp?url=" + window.location.href;
+
+    var agent = navigator.userAgent;
+    var config = {
+      wallet: 'http://www.cybermiles.io/cmt-wallet/',
+      appStore: 'http://www.cybermiles.io/cmt-wallet/',
+      localApp: dappUrl
+    };
+
+    var AppLink = function () {
+    };
+
+    AppLink.openBrowser = function () {
+      _open();
+    };
+
+
+    /**
+     * 跳转函数
+     * @param url 链接
+     */
+    var _go = function (url) {
+      window.location.href = url;
+    }
+    /**
+     * 检查是否唤起
+     * @param cb 回调函数
+     */
+    var _checkOpen = function () {
+      // 如果LOAD_WAITING时间后,还是无法唤醒app，则直接打开下载页
+      var start = Date.now();
+      var loadTimer = setTimeout(function () {
+        if (document.hidden || document.webkitHidden) {
+          return;
+        }
+        // 如果app启动，浏览器最小化进入后台，则计时器存在推迟或者变慢的问题
+        // 那么代码执行到此处时，时间间隔必然大于设置的定时时间
+        if (Date.now() - start > 3000) {
+          // come back from app
+          alert("app 已经open！");
+          // 如果浏览器未因为app启动进入后台，则定时器会准时执行，故应该跳转到下载页
+        } else {
+          window.location.href = config.wallet;
+        }
+
+      }, 3000);
+      var visibilityChange = function () {
+        var tag = document.hidden || document.webkitHidden;
+        tag && clearTimeout(loadTimer);
+      };
+      document.addEventListener('visibilitychange', visibilityChange, false);
+      document.addEventListener('webkitvisibilitychange', visibilityChange, false);
+      // pagehide 必须绑定到window
+      window.addEventListener('pagehide', function () {
+        clearTimeout(loadTimer);
+      }, false);
+    }
+
+
+
+
+    /**
+     * 外部调用的入口函数
+     */
+    var _open = function () {
+      var browser = _getBrowser();
+      // var dappUrl = "cmtwallet://dapp?url=" + window.location.href;
+      var shareLinkMsg = "Please Copy the Share Link and open in the Browser ！";
+      // agent is mobile
+      try {
+        web3.cmt
+      } catch (e) {
+        if (agent.indexOf('iPad') != -1 || agent.indexOf('iPhone') != -1 || agent.indexOf('Android') != -1) {
+          // 微信、QQ 直接跳 钱包下载页面
+          if (browser.isWx) {
+            // tip.error(shareLinkMsg, 120 * 1000);
+            document.getElementsByTagName('body')[0].innerHTML = '<div class="main-contain"><h1>1. 点击右上角</h1><br/><br/><h1>2. 选择在浏览器里打开</h1></div>';
+          } else if (browser.isQQ) {
+            // tip.error(shareLinkMsg, 120 * 1000);
+            document.getElementsByTagName('body')[0].innerHTML = '<div class="main-contain"><h1>1. 点击右上角</h1><br/><br/><h1>2. 选择在浏览器里打开</h1></div>';
+          } else if (browser.isIOS) {
+            // 没有下载
+            _go(config.localApp);
+            _checkOpen();
+          } else if (browser.isAndroid) {
+            alert('isAndroid');
+            // 使用scheme唤起
+            _tryCallApp(config.localApp)
+            // 唤起失败 跳到钱包下载页面
+            _checkOpen(function (isSuccess) {
+              if (!isSuccess) {
+                _go(config.wallet)
+              }
+            })
+          } else if (browser.isWb) {
+            alert("isWb");
+            // 使用scheme唤起
+            _tryCallApp(config.localApp)
+            // tip.right("It is web");
+            // 微博：唤起失败，也不跳转，会有引导功能
+          } else if (browser.isSafari) {
+            alert("isSafari");
+            var version = _getIOSVersion()
+            // iOS10以下不支持直接跳转到AppStore，跳到钱包下载页面
+            if (version < 10) {
+              _go(config.wallet)
+            } else {
+              _go(config.appStore)
+            }
+          } else {
+            alert("else");
+            // 其他情况，直接跳钱包下载页面
+            _go(config.wallet)
+          }
+        } else {
+          // tip.error("You should download MetaMask for CMT first！");
+          setTimeout(function () {
+            window.location.href = 'https://www.cybermiles.io/metamask/';
+          }, 3000);
+        }
+      }
+    }
+
+    /**
+     * 下载按钮的url地址
+     */
+    var _getDownloadUrl = function () {
+      var browser = _getBrowser()
+      var config = config
+      var url = ''
+      if (browser.isQQ) {
+        if (browser.isIOS) {
+          url = config.appStore
+        } else {
+          url = config.wallet
+        }
+      } else if (browser.isSafari) {
+        var version = _getIOSVersion()
+        if (version < 10) {
+          url = config.wallet
+        } else {
+          url = config.appStore
+        }
+      } else if (browser.isWb) {
+        url = ''
+      } else {
+        url = config.wallet
+      }
+      return url
+    }
+    /**
+     * 尝试唤起APP
+     * @param scheme 唤起的scheme
+     */
+    var _tryCallApp = function (scheme) {
+      var aLink = document.createElement('a'),
+        body = document.body
+      aLink.href = scheme
+      body.appendChild(aLink)
+      aLink.click()
+    }
+    /**
+     * 判断iOS版本
+     */
+    var _getIOSVersion = function () {
+      var ver = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/)
+      var version = parseInt(ver[1], 10)
+      return version
+    }
+
+    /**
+     * 获取浏览器数据
+     */
+    var _getBrowser = function () {
+      var UA = navigator.userAgent || ''
+      var isAndroid = (function () {
+        return UA.match(/Android/i) ? true : false
+      })()
+      var isQQ = (function () {
+        return /(iPad|iPhone|iPod).*? (IPad)?QQ\/([\d\.]+)/.test(UA) || /\bV1_AND_SQI?_([\d\.]+)(.*? QQ\/([\d\.]+))?/.test(UA)
+      })()
+      var isIOS = (function () {
+        return UA.match(/iPhone|iPad|iPod/i) ? true : false
+      })()
+      var isSafari = (function () {
+        return /iPhone|iPad|iPod\/([\w.]+).*(safari).*/i.test(UA)
+      })()
+      var isWx = (function () {
+        return UA.match(/micromessenger/i) ? true : false
+      })()
+      var isWb = (function () {
+        return UA.match(/weibo/i) ? true : false
+      })()
+      var isAndroidChrome = (function () {
+        return (UA.match(/Chrome\/([\d.]+)/) || UA.match(/CriOS\/([\d.]+)/)) && isAndroid && !isQQ
+      })()
+      var isQZ = (function () {
+        return UA.indexOf('Qzone/') !== -1
+      })()
+      var browser = {
+        isAndroid: isAndroid,
+        isIOS: isIOS,
+        isSafari: isSafari,
+        isQQ: isQQ,
+        isWb: isWb,
+        isWx: isWx,
+        isQZ: isQZ,
+        isAndroidChrome: isAndroidChrome
+      }
+      return browser
+    }
+
+    return AppLink
+  });
+</script>
+
+<!-- Custom Scripts -->
+<script src="/simple-vote/app.js"></script>
+
+
+<script id="tmpl_vote_create_page" type="text/x-jsrender">
+
+    <div class="row">
+        <div class="col-md-8">
+            <br/>
+            <hr/>
+            <h2 class="text-center">Create Vote</h2>
+            <hr/>
+            <br/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <p>Please enter the title</p>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="title" required="required" placeholder="Title">
+            </div>
+            <p>Please enter options separated by commas</p>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="option" required="required" placeholder="Options">
+            </div>
+            <div id="candidate-box"></div>
+            <button class="btn btn-primary" id="btnCreateVote">Create</button>
+            <div id="msg" style="padding:10px"><br></div>
+            <h3 id="doing"></h3>
+            <div id="createResult"></div>
+            <div id="votePage"></div>
+        </div>
+    </div>
+
+
+</script>
+
+<script id="tmpl_vote_result_page" type="text/x-jsrender">
+
+      <div class="row">
+        <div class="col-md-8">
+            <br/>
+            <hr/>
+            <h2 class="text-center">Voting Result</h2>
+            <blockquote>
+                <div class="text-muted text-center" >Address: <span id="contractAddress" class="address-tag"></span></div>
+            </blockquote>
+            <hr/>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-8">
+
+          <div id="voteResult"></div>
+          <div id="msg" style="padding:10px"></div>
+          <h3 id="doing"></h3>
+          <div id="verifyResult"></div>
+          <div id="voteTxResult"></div>
+        </div>
+    </div>
+
+</script>
+
+<script id="tmpl_vote_result" type="text/x-jsrender">
+
+    <!--Contract was successfully created !!!-->
+
+    <blockquote>
+        <span class="text-info">Transaction hash:</span>
+        <a href="https://testnet.cmttracking.io/tx/{{:hash}}" class="address-tag">{{:hash}}</a>
+    </blockquote>
+
+    {{if address}}
+    <blockquote>
+        <span class="text-info">Contract address:</span>
+        <a href="https://testnet.cmttracking.io/address/{{:address}}" class="address-tag">{{:address}}</a>
+    </blockquote>
+    {{/if}}
+
+</script>
+
+<script id="tmpl_goto_vote" type="text/x-jsrender">
+
+    <!--Contract was successfully created !!!-->
+    <blockquote>
+        <a href="{{:dappHost}}/simple-vote/index.html?contract={{:contractAddress}}">To vote result page</a>
+    </blockquote>
+
+</script>
+
+<script id="tmpl_vote_tx_result" type="text/x-jsrender">
+
+    <blockquote>
+        <span class="text-info">Vote succeeded (</span>
+        <a href="https://testnet.cmttracking.io/tx/{{:hash}}" class="address-tag">{{:hash}}</a>
+        <span class="text-info">)</span>
+    </blockquote>
+
+</script>
+
+<script id="tmpl_vote_list" type="text/x-jsrender">
+
+      <h4 id="voteTitle">Title: {{:voteTitle}} </h4>
+
+      <table class="table" id="resultTable">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Option</th>
+                <th scope="col">Score</th>
+                <th scope="col">Operation</th>
+              </tr>
+            </thead>
+            <tbody>
+
+            {{for options}}
+                <tr>
+                <td>{{:#index}}</td>
+                <td>{{:option}}</td>
+                <td>{{:score}}</td>
+                <td><button type='button' class='btn btn-success voteBtn' val='{{:#index}}'>Vote</button></td>
+                </tr>
+            {{/for}}
+            </tbody>
+      </table>
+
+
+  </script>
+
+</body>
+</html>
